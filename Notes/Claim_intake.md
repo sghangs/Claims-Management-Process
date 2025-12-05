@@ -102,3 +102,31 @@ Claim ID returned, ready for next steps.
 2. Frontend: React(Web),Twilio/WhatsApp API for chat
 3. LLM: GPT-5/Claude
 4. Storage: S3 for media,Postgres for claim metadata.
+
+### Agentic AI usuage:
+
+Claim Intake is mostly deterministic:
+
+1. Read structured fields from UI
+2. Validate policy number format
+3. Lookup policy in backend
+4. Assign claim_id
+5. Generate S3 pre-signed URLs
+6. Save FNOL into DB
+7. Publish event
+
+None of these require multi-step reasoning, planning, branching, or iterative workflows that “Agentic AI” is designed for.
+
+### LLM can help:
+
+1. Normalize the FNOL narrative (“My car hit a divider yesterday evening” → clean JSON)
+2. Extract structured information (“rear impact”, “Mumbai–Western Express Highway”)
+3. Validate missing fields (“location missing”, “incident time unclear”)
+
+This is a single-shot or function-calling LLM task, not an agentic one.
+
+## Agentic AI would be needed:
+
+1. Conversational intake (chatbot)
+2. Dynamic questioning (“Upload rear-left photo → not clear → ask again”)
+3. Autonomous workflow decisions (“Missing RC → push user to upload → re-evaluate”)

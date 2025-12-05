@@ -1,0 +1,626 @@
+1️⃣ Claim Intake (Customer FNOL Submission)
+Should we use Agentic AI here?
+
+✅ YES
+
+Why?
+
+Generative AI alone can produce text responses — but claim intake requires decisions and actions, such as:
+
+“Is the policy number valid?”
+
+“User didn’t upload driving license; ask again.”
+
+“Only 1 angle of car damage uploaded; ask for 2 more.”
+
+“Accident date seems wrong; validate.”
+
+“Autofill user data from policy & CRM.”
+
+These require planning, tool-use, and conditional logic, not plain text.
+
+Agentic Behaviors Required:
+What Agent Must Do	Why LLM Alone Fails
+Ask dynamic follow-up questions	Generative LLM cannot decide missing fields deterministically
+Validate fields using backend APIs (policy lookup, customer info)	LLM cannot call APIs without tools
+Guide user to upload photos based on accident type	Requires conditional branching
+Normalize narrative → structured JSON	Plain text output is too messy
+Tools used
+
+validate_policy_tool
+
+validate_user_identity_tool
+
+generate_upload_url_tool
+
+extract_structured_fnol_data_tool
+
+Architecture
+
+Single Agent using ReAct (LM decides next action).
+
+2️⃣ Document & Evidence Ingestion
+Should we use Agentic AI?
+
+🟡 YES, but lightweight
+
+Why?
+
+Documents must be:
+
+classified
+
+renamed
+
+routed to OCR
+
+validated
+
+checked for duplicates
+
+LLM alone cannot decide:
+
+“Is this RC book or driver license?”
+
+“Should I reject low-resolution images?”
+
+“Should I trigger a re-upload request?”
+
+Tools:
+
+classify_document_tool
+
+ocr_processing_tool
+
+image_quality_check_tool
+
+Architecture:
+
+Single agent with router capability
+
+A small ReAct loop: “classify → extract → validate → publish ingestion event”.
+
+3️⃣ Data Enrichment
+Should we use Agentic AI?
+
+🟡 YES — but hybrid ML + Agent
+
+Why?
+
+Generative AI cannot:
+
+Pull garage network data
+
+Enrich with weather API
+
+Geo-validate accident location
+
+Map policy coverages
+
+Detect missing metadata
+
+These require multi-source enrichment, not text generation.
+
+Tools:
+
+geo_reverse_lookup_tool
+
+weather_api_tool
+
+garage_network_tool
+
+policy_coverage_tool
+
+Architecture:
+
+Single agent orchestrating external tools
+
+Works like an ETL conductor
+
+4️⃣ Initial Assessment & Triage
+Should we use Agentic AI?
+
+🟢 YES — strongly
+
+Why?
+
+Triage requires:
+
+complexity scoring
+
+severity prediction
+
+repairability classification
+
+estimating missing-doc probability
+
+rule-based triage
+
+ML fusion (tabular ML + LLM reasoning)
+
+Generative AI alone cannot:
+
+Run deterministic rules
+
+Fuse ML models
+
+Validate severity against policy limits
+
+Trigger escalation to fraud or adjuster
+
+Agentic AI enables:
+
+Planning: “First fetch historical claim → run severity model → compare → check policy → output triage bucket”
+
+Tools:
+
+severity_model_tool
+
+rules_engine_tool
+
+claim_history_lookup_tool
+
+5️⃣ Fraud Detection
+Should we use Agentic AI?
+
+🟢 YES — mandatory
+
+Why?
+
+Fraud requires:
+
+pattern detection
+
+cross-document comparison
+
+timestamp consistency analysis
+
+EXIF → location check
+
+duplicate image detection
+
+anomaly detection from ML models
+
+LLM-only fails because:
+
+It cannot analyze EXIF
+
+It cannot compare two images
+
+It cannot run ML models
+
+It cannot join historical claim data
+
+Agent = orchestrator of multiple tools + reasoning.
+
+Tools:
+
+image_forensics_tool
+
+duplicate_image_tool
+
+fraud_tabular_model_tool
+
+sanctions_check_tool
+
+6️⃣ Damage Assessment
+Should we use Agentic AI?
+
+🟡 YES — mostly Vision ML + orchestration
+
+LLM cannot:
+
+detect car parts
+
+segment dents
+
+estimate repair cost
+
+compare with historical patterns
+
+Agentic AI coordinates:
+
+vision model → parts → damage → cost
+
+equilibrium rules
+
+anomaly detection
+
+escalate to human if low confidence
+
+Tools:
+
+vision_damage_model_tool
+
+labor_rate_tool
+
+parts_catalog_tool
+
+7️⃣ Decision Engine & Auto Settlement
+Should we use Agentic AI?
+
+🟢 YES — mandatory
+
+Auto-settlement is where agentic logic shines.
+
+Generative AI cannot:
+
+enforce compliance rules
+
+combine policy tables + repair estimate
+
+resolve contradictions
+
+compute payouts
+
+ensure deterministic decision making
+
+Agent must:
+
+gather context
+
+check coverage
+
+validate deductibles
+
+compute allowable parts
+
+generate settlement
+
+check confidence
+
+escalate if needed
+
+Tools:
+
+coverage_rules_tool
+
+deductible_calculator_tool
+
+confidence_estimator_tool
+
+8️⃣ Escalation & Human Adjuster Workbench
+Should we use Agentic AI?
+
+🟢 YES — as co-pilot
+
+The agent helps the adjuster:
+
+summarize evidence
+
+highlight contradictions
+
+annotate fraud markers
+
+suggest decisions
+
+create draft notes
+
+answer policy questions
+
+LLM alone without agentic control cannot:
+
+pull required documents
+
+fetch policy tables
+
+navigate claim history
+
+update notes in backend
+
+ask clarifying questions
+
+Tools:
+
+claim_summary_tool
+
+policy_qna_tool
+
+adjuster_notes_tool
+
+9️⃣ Customer Communication
+Should we use Agentic AI?
+
+🟡 YES — for personalization & routing
+
+Agent:
+
+decides channel
+
+picks template or LLM
+
+determines fallback logic
+
+retrieves history
+
+generates personalized message
+
+triggers delivery
+
+Plain LLM cannot:
+
+know what channel to use
+
+structure multi-channel flows
+
+attach documents
+
+call notification APIs
+
+Tools:
+
+channel_router_tool
+
+template_renderer_tool
+
+notification_api_tool
+
+🔟 Payment Disbursement & Reconciliation
+Should we use Agentic AI?
+
+🟡 YES — but lightweight
+
+Agent orchestrates:
+
+KYC checks
+
+AML checks
+
+payout method selection
+
+bank retries
+
+reconciliation logic
+
+anomaly detection
+
+Plain LLM cannot:
+
+run KYC APIs
+
+match UTRs
+
+parse bank files
+
+implement retry logic
+
+detect anomalies deterministically
+
+Tools:
+
+kyc_check_tool
+
+imps_neft_tool
+
+recon_engine_tool
+
+1️⃣1️⃣ Reporting & Analytics
+Should we use Agentic AI?
+
+🟡 YES — for natural language insights
+
+Agent generates:
+
+dashboards
+
+anomaly insights
+
+SLA deviations
+
+fraud patterns
+
+root cause analysis (RCA)
+
+Generative AI alone can write summaries —
+but agentic reasoning is needed to query data, combine metrics, run SQL tools, retrieve dashboards.
+
+Tools:
+
+sql_query_tool
+
+kpi_fetch_tool
+
+| Stage              | Agentic AI Needed? | Why                                              | Tools                              |
+| ------------------ | ------------------ | ------------------------------------------------ | ---------------------------------- |
+| Claim Intake       | 🟢 Yes             | dynamic questions, missing fields, policy lookup | validation, upload URL, extraction |
+| Document Ingestion | 🟡 Yes             | classification + OCR + routing                   | classify, OCR, quality check       |
+| Data Enrichment    | 🟡 Yes             | combine external APIs                            | weather, geo, network              |
+| Triage             | 🟢 Yes             | rules + ML + reasoning                           | severity model, rules engine       |
+| Fraud              | 🟢 Mandatory       | cross-doc compare, EXIF, ML                      | forensics, tabular model           |
+| Damage Assessment  | 🟡 Yes             | ML + reasoning                                   | vision model, parts cost           |
+| Auto Settlement    | 🟢 Mandatory       | compliance + payout logic                        | coverage rules                     |
+| Adjuster Workbench | 🟢 Yes             | summaries, explanations                          | policy qna, summary                |
+| Communication      | 🟡 Yes             | templates + channel logic                        | router, template                   |
+| Payment            | 🟡 Yes             | KYC, AML, retries                                | kyc, payout, recon                 |
+| Reporting          | 🟡 Yes             | NL analytics                                     | sql, kpi                           |
+
+🟩 A) Cost
+Generative AI only:
+
+Cheap if using small models
+
+But: expensive when you repeatedly call LLM for tasks that do not need LLM
+
+Poor fallback logic → more retries → more cost
+
+Agentic AI:
+
+Reduces LLM cost by deciding when NOT to call LLM
+
+Performs cheap tools first (OCR → classifier → embeddings)
+
+Uses LLM only when confidence low
+
+Avoids expensive paid APIs unless needed (Textract fallback)
+
+Savings:
+📉 40–60% lower LLM cost in production
+📉 25% reduction in expensive OCR calls
+📉 30–50% reduction in human adjuster cost
+
+🟦 B) Latency
+Generative AI:
+
+Single-shot models → fast for simple tasks
+
+But slow for complex tasks because you need many separate calls
+
+Agentic AI:
+
+Parallelized tool calls (fraud + damage assess together)
+
+Smart routing reduces unnecessary operations
+
+Overall claim processing time significantly lower
+
+Latency improvement:
+⚡ 2–3× faster end-to-end claim processing
+⚡ 10× fewer user follow-up requests
+
+🟥 C) Complexity
+Generative AI:
+
+Lower coding complexity
+
+But cannot handle enterprise workflows or branching logic
+
+Requires manual logic by engineers for every special case
+
+Agentic AI:
+
+Slightly more complex at design stage
+
+But much simpler long-term because the agent handles:
+
+branching
+
+retries
+
+workflow state
+
+context memory
+
+tool orchestration
+
+Meaning:
+Agentic AI reduces business logic complexity, even though technical setup is richer.
+
+Technical advantages (high-level, cumulative)
+
+Orchestration of tools & side-effects
+
+Agents can call APIs, run models, write DBs, issue payments, generate presigned URLs — LLMs alone cannot reliably perform side-effects.
+
+Makes complex cross-system flows (OCR → classifier → vector DB → graph DB → rules) reliable and auditable.
+
+Deterministic control flow + conditional branching
+
+Agents implement explicit decision logic (if/then/retry), enabling deterministic outcomes required by regulations and audits.
+
+Supports multi-step, stateful interactions (pause/wait for uploads, human approvals).
+
+Cost-optimized model use (call economy)
+
+Agents decide when to call expensive models (large LLMs, paid OCR) vs cheap alternatives (Tesseract, small LLMs), reducing OpEx.
+
+Enables strategies like “cheap-first, escalate-if-needed.”
+
+Robust error handling & idempotency
+
+Agents built-in retry, backoff, idempotency keys for DB writes and external calls — critical when integrating fragile third-party services.
+
+Parallelism & latency optimization
+
+Agents can run non-dependent tasks in parallel (fraud checks & damage assessment), lowering end-to-end time compared to sequential LLM calls.
+
+Observability, provenance & auditing
+
+Every tool call, model version, prompt, and decision is logged by the agent. This produces the evidence trail auditors/regulators require.
+
+Human-in-the-loop orchestration
+
+Easier gating for human review, records adjuster decisions, resumes workflows automatically — LLMs alone can’t reliably manage these pauses.
+
+Composable & modular architecture
+
+Agents expose small, testable behaviors (route, parse, validate) which are easier to maintain than dozens of ad-hoc prompts embedded in application code.
+
+Integration of heterogeneous models
+
+Agents can fuse results from tabular ML, CV models, graph analytics, vector similarity, and LLM reasoning in a controlled way.
+
+Policy and rules governance
+
+Agents can integrate rules engines (OPA/Drools) for hard constraints while still using LLMs for soft interpretation — offering a compliance-safe hybrid.
+
+II. Business advantages (impact & value)
+
+Higher automation rate (reduced manual work)
+
+Agentic flows can safely automate more claim paths (straight-through-processing), reducing adjuster workload and operating cost.
+
+Faster SLAs & better CX
+
+Parallel agents and smart fallbacks reduce time-to-first-decision and time-to-payout — improves NPS and reduces call volume.
+
+Lower operational cost over time
+
+By avoiding unnecessary expensive LLM calls and human rework, agentic solutions lower per-claim cost at scale.
+
+Improved fraud detection & loss prevention
+
+Agents combine graph, vector, tabular, and LLM reasoning to catch complex fraud rings earlier — directly reducing payouts and leakage.
+
+Regulatory compliance & defensibility
+
+Audit trails, model-versioning, and deterministic rules make decisions defensible before auditors and courts.
+
+Faster iteration & feature velocity
+
+Swap agent tools (new CV model, new vendor API) without rewriting the entire flow. Business can deploy policy/rule changes faster.
+
+Risk mitigation & safer automation
+
+Agents set safe thresholds and escalate uncertain cases to humans, reducing wrong automated payouts and reputational risk.
+
+Better analytics & continuous learning
+
+Structured agent traces create high-quality labeled data for retraining models & improving decisioning over time.
+
+Scalability for complexity
+
+As you add more channels, document types, and edge-cases, agents scale structurally — you don’t need more monolithic engineering.
+
+Vendor neutrality & gradual migration
+
+You can start with managed LLMs and swap to on-prem ones or specialized vision vendors as privacy/compliance needs grow.
+
+III. Concrete examples (concise)
+
+Business example: An agent detects a reused image across claims (vector DB + similarity), runs graph queries, computes a composite fraud score, and auto-creates an SIU case with supporting evidence — all without human orchestration.
+
+Technical example: For low-confidence OCR, agent retries with image-enhancement → if still low, routes to human with a short checklist and prefilled evidence to expedite review.
+
+Cost example: Agent first uses inexpensive embeddings (MiniLM) for most cases, and only for borderline similarity calls upgrades to OpenAI embeddings — saving tokens and reducing vector DB egress.
+
+IV. Trade-offs (cost / complexity / latency)
+
+Initial complexity & engineering cost
+
+Agentic systems require more upfront design (agents, tools, retries, policies) — higher TTM compared to quick LLM prototypes.
+
+Operational complexity
+
+Need observability, testing harnesses, and CI for prompts, tool contracts and agent flows.
+
+Latency
+
+Per-agent orchestration can add small overheads, but agents enable parallelism — net latency often improves. Calls to external tools still dominate latency; agents help reduce unnecessary calls.
+
+Monetary cost
+
+Short-term higher infra and engineering cost. Long-term lower OPEX due to optimized model usage and fewer manual interventions.
+
+Governance overhead
+
+You need policies for model versions, prompt changes, and agent logic. This is work, but required for enterprise compliance.
